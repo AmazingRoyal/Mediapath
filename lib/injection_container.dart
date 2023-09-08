@@ -1,0 +1,30 @@
+import 'package:get_it/get_it.dart';
+import 'package:dio/dio.dart';
+import 'package:mediapath/core/usecases/get_article.dart';
+import 'package:mediapath/features/live_news/data/data_sources/remote/news_api_service.dart';
+import 'package:mediapath/features/live_news/domain/repository/article_repository.dart';
+import 'package:mediapath/features/live_news/presentation/bloc/article/remote_article_bloc.dart';
+
+import 'features/live_news/data/data_sources/local/app_database.dart';
+import 'features/live_news/data/repository/article_repository_impl.dart';
+
+final sl = GetIt.instance;
+
+Future<void> initializeDependencies() async {
+  // Database
+  final database = await $FloorAppDatabase.databaseBuilder('app_database.db').build();
+  sl.registerSingleton<AppDatabase>(database);
+
+  // Dio
+  sl.registerSingleton<Dio>(Dio());
+
+  // Dependencies
+  sl.registerSingleton<NewsApiService>(NewsApiService(sl()));
+  sl.registerSingleton<ArticleRepository>(ArticleRepositoryImpl(sl()));
+
+  // UseCases
+  sl.registerSingleton<GetArticleUseCase>(GetArticleUseCase(sl()));
+  
+  // Blocs
+  sl.registerFactory<RemoteArticleBloc>(() => RemoteArticleBloc(sl()));
+}
